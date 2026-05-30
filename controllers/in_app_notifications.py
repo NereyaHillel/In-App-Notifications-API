@@ -33,9 +33,11 @@ def create_notification():
               description: Notification message content
             start_date:
               type: string
+              format: date-time
               description: Start date and time for the notification
             end_date:
               type: string
+              format: date-time
               description: End date and time for the notification
             status:
               type: string
