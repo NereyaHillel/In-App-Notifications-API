@@ -81,3 +81,19 @@ def create_notification():
     start_date = data.get('start_date')
     end_date = data.get('end_date')
     status = data.get('status')
+    
+    db.in_app_notifications.insert_one({
+        "user_id": user_id,
+        "message": message,
+        "start_date": start_date,
+        "end_date": end_date,
+        "status": status
+    })
+    
+    return jsonify({"message": "Notification created successfully", "notification": {
+        "user_id": user_id,
+        "message": message,
+        "start_date": start_date,
+        "end_date": end_date,
+        "status": status
+    }}), 201
