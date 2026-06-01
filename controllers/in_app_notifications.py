@@ -22,8 +22,9 @@ def create_notification():
             - message
             - start_date
             - end_date
-            - position
             - status
+          options:
+            - position
           properties:
             message:
               type: string
