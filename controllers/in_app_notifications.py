@@ -19,15 +19,12 @@ def create_notification():
           type: object
           id: InAppNotification
           required:
-            - user_id
             - message
             - start_date
             - end_date
+            - position
             - status
           properties:
-            user_id:
-              type: string
-              description: ID of the user to receive the notification
             message:
               type: string
               description: Notification message content
@@ -39,6 +36,9 @@ def create_notification():
               type: string
               format: date-time
               description: End date and time for the notification
+            position:
+              type: string
+              description: Position of the notification on the screen (e.g., top, bottom, center)
             status:
               type: string
               description: Status of the notification
@@ -76,24 +76,24 @@ def create_notification():
         return jsonify({"error": "Invalid date range: start_date must be before end_date"}), 400
             
     
-    user_id = data.get('user_id')
     message = data.get('message')
     start_date = data.get('start_date')
     end_date = data.get('end_date')
+    position = data.get('position', 'top')  # Default position is 'top' if not provided
     status = data.get('status')
     
     db.in_app_notifications.insert_one({
-        "user_id": user_id,
         "message": message,
         "start_date": start_date,
         "end_date": end_date,
+        "position": position,
         "status": status
     })
     
     return jsonify({"message": "Notification created successfully", "notification": {
-        "user_id": user_id,
         "message": message,
         "start_date": start_date,
         "end_date": end_date,
+        "position": position,
         "status": status
     }}), 201
