@@ -102,33 +102,34 @@ def create_notification():
 @in_app_notifications_bp.route('/getNotifications', methods=['GET'])
 def get_notifications():
     """Get all in-app notifications
-    ---    
+    ---
     tags:
       - In-App Notifications
-      schemas:
-        InAppNotification:
-            type: object
-            properties:
-                message:
-                type: string
-                description: Notification message content
-                start_date:
-                type: string
-                format: date-time
-                description: Start date and time for the notification
-                end_date:
-                type: string
-                format: date-time
-                description: End date and time for the notification
-                position:
-                type: string
-                description: Position of the notification on the screen (e.g., top, bottom, center)
-                status:
-                type: string
-                description: Status of the notification (e.g., active, inactive)
     responses:
         200:
-            description: List of all in-app notifications
+            description: A list of in-app notifications
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Notification message content
+                  start_date:
+                    type: string
+                    format: date-time
+                    description: Start date and time for the notification
+                  end_date:
+                    type: string
+                    format: date-time
+                    description: End date and time for the notification
+                  position:
+                    type: string
+                    description: Position of the notification on the screen (e.g., top, bottom, center)
+                  status:
+                    type: string
+                    description: Status of the notification
         500:
             description: Internal server error
     """
