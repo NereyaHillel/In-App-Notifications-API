@@ -4,7 +4,7 @@ from DB_Connector import DBConnector
 
 in_app_notifications_bp = Blueprint('in_app_notifications_bp', __name__)
 
-@in_app_notifications_bp.route('/in-app-notifications', methods=['POST'])
+@in_app_notifications_bp.route('/createNotification', methods=['POST'])
 def create_notification():
     """Create a new in-app notification
     ---    
@@ -98,3 +98,45 @@ def create_notification():
         "position": position,
         "status": status
     }}), 201
+    
+@in_app_notifications_bp.route('/getNotifications', methods=['GET'])
+def get_notifications():
+    """Get all in-app notifications
+    ---    
+    tags:
+      - In-App Notifications
+      schemas:
+        InAppNotification:
+            type: object
+            properties:
+                message:
+                type: string
+                description: Notification message content
+                start_date:
+                type: string
+                format: date-time
+                description: Start date and time for the notification
+                end_date:
+                type: string
+                format: date-time
+                description: End date and time for the notification
+                position:
+                type: string
+                description: Position of the notification on the screen (e.g., top, bottom, center)
+                status:
+                type: string
+                description: Status of the notification (e.g., active, inactive)
+    responses:
+        200:
+            description: List of all in-app notifications
+        500:
+            description: Internal server error
+    """
+    # Logic to retrieve all in-app notifications
+    db = DBConnector.get_db()
+    
+    if db is None:
+        return jsonify({"error": "Database connection failed"}), 500
+    
+    notifications = list(db.in_app_notifications.find({}, {"_id": 0}))
+    return jsonify(notifications), 200
