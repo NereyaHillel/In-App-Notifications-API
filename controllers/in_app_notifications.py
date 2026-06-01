@@ -61,10 +61,8 @@ def create_notification():
     if not data:
         return jsonify({"error": "Invalid input, JSON data is required"}), 400
     
-    if not all(key in data for key in ['user_id', 'message', 'start_date', 'end_date', 'status']):
-        return jsonify({"error": "Missing required fields: user_id, message, start_date, end_date, status"}), 400
     
-    if not isinstance(data['user_id'], str) or not isinstance(data['message'], str) or not isinstance(data['status'], str):
+    if  not isinstance(data['message'], str) or not isinstance(data['status'], str):
         return jsonify({"error": "Invalid input types: user_id, message, and status must be strings"}), 400
     
     if not isinstance(data['start_date'], str) or not isinstance(data['end_date'], str):
