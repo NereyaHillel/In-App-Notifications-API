@@ -1,7 +1,6 @@
+import uuid
 from flask import Blueprint, request, jsonify
 from DB_Connector import DBConnector
-from bson.objectid import ObjectId
-from bson.errors import InvalidId
 
 in_app_notifications_bp = Blueprint('in_app_notifications_bp', __name__)
 
@@ -52,10 +51,10 @@ def register_device():
     user_id = data.get('user_id')
     
     db.registered_devices.update_one(
-    {"device_id": device_id}, 
-    {"$set": {"user_id": user_id, "last_active": "..."}}, 
-    upsert=True 
-)
+        {"device_id": device_id}, 
+        {"$set": {"user_id": user_id, "last_active": "..."}}, 
+        upsert=True 
+    )
     
     return jsonify({"message": "Device registered successfully", "device": {
         "device_id": device_id,
@@ -93,7 +92,6 @@ def get_notifications():
     
     notifications = list(db.notifications.find({"user_id": user_id}))
     
-    # Convert ObjectId to string for JSON serialization
     for note in notifications:
         note['_id'] = str(note['_id'])
     
@@ -217,7 +215,6 @@ def get_campaigns():
     
     campaigns = list(db.campaigns.find())
     
-    # Convert ObjectId to string for JSON serialization
     for camp in campaigns:
         camp['_id'] = str(camp['_id'])
     
@@ -269,13 +266,17 @@ def create_campaign():
     name = data.get('name')
     message = data.get('message')
     
-    result = db.campaigns.insert_one({
+    campaign_id = uuid.uuid4().hex
+    
+    db.campaigns.insert_one({
+        "_id": campaign_id,
         "name": name,
-        "message": message
+        "message": message,
+        "status": "draft"
     })
     
     return jsonify({"message": "Campaign created successfully", "campaign": {
-        "_id": str(result.inserted_id),
+        "_id": campaign_id,
         "name": name,
         "message": message
     }}), 200
@@ -310,12 +311,7 @@ def delete_campaign(campaign_id):
     if not campaign_id:
         return jsonify({"error": "Invalid input, campaign_id is required"}), 400
         
-    try:
-        obj_id = ObjectId(campaign_id)
-    except InvalidId:
-        return jsonify({"error": "Invalid campaign_id format"}), 400
-    
-    result = db.campaigns.delete_one({"_id": obj_id})
+    result = db.campaigns.delete_one({"_id": campaign_id})
     
     if result.deleted_count == 0:
         return jsonify({"error": "Campaign not found"}), 404
@@ -368,14 +364,9 @@ def update_campaign_status(campaign_id):
     if not isinstance(data.get('status'), str):
         return jsonify({"error": "Invalid input type: status must be a string"}), 400
         
-    try:
-        obj_id = ObjectId(campaign_id)
-    except InvalidId:
-        return jsonify({"error": "Invalid campaign_id format"}), 400
-    
     status = data.get('status')
     
-    result = db.campaigns.update_one({"_id": obj_id}, {"$set": {"status": status}})
+    result = db.campaigns.update_one({"_id": campaign_id}, {"$set": {"status": status}})
     
     if result.matched_count == 0:
         return jsonify({"error": "Campaign not found"}), 404
@@ -485,13 +476,7 @@ def get_campaign_stats(campaign_id):
     if not campaign_id:
         return jsonify({"error": "Invalid input, campaign_id is required"}), 400
         
-    try:
-        obj_id = ObjectId(campaign_id)
-    except InvalidId:
-        return jsonify({"error": "Invalid campaign_id format"}), 400
-    
     stats = {
-        # Using obj_id or campaign_id string depending on how you store foreign keys
         "total_notifications_sent": db.notifications.count_documents({"campaign_id": campaign_id}),
         "total_clicks": db.notifications.count_documents({"campaign_id": campaign_id, "clicked": True}),
     }
