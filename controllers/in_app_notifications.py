@@ -9,7 +9,7 @@ def register_device():
     """Register a device for in-app notifications
     ---
     tags:
-      - In-App Notifications - Device Registration
+      - In-App Notifications - SDK 
     parameters:
       - name: device_info
         in: body
@@ -69,7 +69,7 @@ def get_notifications():
     """Get in-app notifications for a user
     ---
     tags:
-      - In-App Notifications - Get Notifications
+      - In-App Notifications - SDK 
     parameters:
       - name: user_id
         in: query
@@ -105,7 +105,7 @@ def sync_notifications():
     """Sync in-app notifications for a user
     ---
     tags:
-      - In-App Notifications - Sync Notifications
+      - In-App Notifications - SDK 
     parameters:
       - name: user_id
         in: body
@@ -152,7 +152,7 @@ def report_crash():
     """Report a crash for in-app notifications
     ---
     tags:
-      - In-App Notifications - Crash Reporting 
+      - In-App Notifications - SDK 
     parameters:
       - name: crash_info
         in: body
@@ -209,7 +209,7 @@ def get_campaigns():
     """Get all in-app notification campaigns
     ---
     tags:
-      - In-App Notifications - Campaign Management
+      - In-App Notifications - portal
     responses:
         200:
             description: Campaigns retrieved successfully
@@ -288,7 +288,7 @@ def delete_campaign(campaign_id):
     """Delete an in-app notification campaign
     ---
     tags:
-      - In-App Notifications - Campaign Management
+      - In-App Notifications - portal
     parameters:
       - name: campaign_id
         in: path
@@ -325,7 +325,7 @@ def update_campaign_status(campaign_id):
     """Update the status of an in-app notification campaign
     ---
     tags:
-      - In-App Notifications - Campaign Management
+      - In-App Notifications - portal
     parameters:
       - name: campaign_id
         in: path
@@ -380,7 +380,7 @@ def send_test_push():
     """Send a test push notification for an in-app notification campaign
     ---
     tags:
-      - In-App Notifications - Campaign Management
+      - In-App Notifications - portal
     parameters:
       - name: test_push_info
         in: body
@@ -434,8 +434,7 @@ def get_overview_stats():
     """Get overview statistics for in-app notifications
     ---
     tags:
-      - In-App Notifications - Analytics and Reporting
-    responses:
+      - In-App Notifications - portal
         200:
             description: Overview statistics retrieved successfully
         500:
@@ -460,7 +459,7 @@ def get_campaign_stats(campaign_id):
     """Get statistics for a specific in-app notification campaign
     ---
     tags:
-      - In-App Notifications - Analytics and Reporting
+      - In-App Notifications - portal
     parameters:
       - name: campaign_id
         in: path
