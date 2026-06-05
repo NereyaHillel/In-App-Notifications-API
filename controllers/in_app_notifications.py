@@ -227,7 +227,7 @@ def create_campaign():
     """Create a new in-app notification campaign
     ---
     tags:
-      - In-App Notifications - Campaign Management
+      - In-App Notifications - portal
     parameters:
       - name: campaign_info
         in: body
