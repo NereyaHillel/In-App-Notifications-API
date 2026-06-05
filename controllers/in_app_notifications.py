@@ -195,6 +195,46 @@ def report_crash():
         "user_id": user_id,
         "crash_details": crash_details
     }}), 200
+    
+@in_app_notifications_bp.route('/api/v1/sdk/notifications/<id>/interact', methods=['POST'])
+def interact_with_notification(id):
+    """Interact with a specific in-app notification
+    ---
+    tags:
+      - In-App Notifications - SDK 
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+        description: Identifier for the notification to interact with
+    responses:
+        200:
+            description: Notification interaction recorded successfully
+        400:
+            description: Invalid input
+        404:
+            description: Notification not found
+        500:
+            description: Internal server error
+    """
+    data = request.get_json()
+    db = DBConnector.get_db()
+    
+    if db is None:
+        return jsonify({"error": "Database connection failed"}), 500
+    
+    if not data:
+        return jsonify({"error": "Invalid input, JSON data is required"}), 400
+    
+    notification = db.notifications.find_one({"_id": id})
+    
+    if not notification:
+        return jsonify({"error": "Notification not found"}), 404
+    
+    # Process the interaction (e.g., update read status, log action)
+    
+    return jsonify({"message": "Notification interaction recorded successfully", "notification_id": id}), 200
 
 @in_app_notifications_bp.route('/api/v1/admin/campaigns', methods=['GET'])
 def get_campaigns():
