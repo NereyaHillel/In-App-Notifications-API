@@ -51,10 +51,11 @@ def register_device():
     device_id = data.get('device_id')
     user_id = data.get('user_id')
     
-    db.registered_devices.insert_one({
-        "device_id": device_id,
-        "user_id": user_id
-    })
+    db.registered_devices.update_one(
+    {"device_id": device_id}, 
+    {"$set": {"user_id": user_id, "last_active": "..."}}, 
+    upsert=True 
+)
     
     return jsonify({"message": "Device registered successfully", "device": {
         "device_id": device_id,

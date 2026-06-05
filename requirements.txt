@@ -1,4 +1,5 @@
 flask
 flasgger
 pymongo
-python-dotenv   
+python-dotenv
+bson
