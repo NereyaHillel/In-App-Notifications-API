@@ -218,23 +218,30 @@ def interact_with_notification(id):
         500:
             description: Internal server error
     """
-    data = request.get_json()
     db = DBConnector.get_db()
     
     if db is None:
         return jsonify({"error": "Database connection failed"}), 500
     
-    if not data:
-        return jsonify({"error": "Invalid input, JSON data is required"}), 400
+    if not id:
+        return jsonify({"error": "Invalid input, notification ID is required in the path"}), 400
     
-    notification = db.notifications.find_one({"_id": id})
+    # Find the specific notification and update its read/clicked status in one operation
+    result = db.notifications.update_one(
+        {"_id": id}, 
+        {"$set": {
+            "status": "read", 
+            "clicked": True 
+        }}
+    )
     
-    if not notification:
+    if result.matched_count == 0:
         return jsonify({"error": "Notification not found"}), 404
     
-    # Process the interaction (e.g., update read status, log action)
-    
-    return jsonify({"message": "Notification interaction recorded successfully", "notification_id": id}), 200
+    return jsonify({
+        "message": "Notification interaction recorded successfully", 
+        "notification_id": id
+    }), 200
 
 @in_app_notifications_bp.route('/api/v1/admin/campaigns', methods=['GET'])
 def get_campaigns():
@@ -384,7 +391,7 @@ def update_campaign_status(campaign_id):
               description: New status for the campaign (e.g., active, paused)
     responses:
         200:
-            description: Campaign status updated successfully
+            description: Campaign status updated successfully (and notifications generated if active)
         400:
             description: Invalid input
         404:
@@ -406,12 +413,40 @@ def update_campaign_status(campaign_id):
         
     status = data.get('status')
     
+    # 1. Update the campaign blueprint's status
     result = db.campaigns.update_one({"_id": campaign_id}, {"$set": {"status": status}})
     
     if result.matched_count == 0:
         return jsonify({"error": "Campaign not found"}), 404
+
+    # 2. THE FAN-OUT LOGIC: If the admin just activated the campaign, generate the notifications
+    if status == "active":
+        # Fetch the blueprint to get the message content
+        campaign = db.campaigns.find_one({"_id": campaign_id})
+        
+        # Get all unique users who have registered a device
+        users = db.registered_devices.distinct("user_id")
+        
+        if users:
+            notifications_to_insert = []
+            for uid in users:
+                notifications_to_insert.append({
+                    "_id": uuid.uuid4().hex,
+                    "campaign_id": campaign_id,
+                    "user_id": uid,
+                    "message": campaign.get("message"), # Copy the message payload
+                    "status": "delivered",
+                    "clicked": False
+                })
+            
+            # Bulk insert is highly efficient for MongoDB
+            db.notifications.insert_many(notifications_to_insert)
     
-    return jsonify({"message": "Campaign status updated successfully", "campaign_id": campaign_id, "new_status": status}), 200
+    return jsonify({
+        "message": f"Campaign status updated to {status}", 
+        "campaign_id": campaign_id, 
+        "new_status": status
+    }), 200
 
 @in_app_notifications_bp.route('/api/v1/admin/campaigns/test-push', methods=['POST'])
 def send_test_push():
