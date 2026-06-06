@@ -283,6 +283,8 @@ def create_campaign():
           required:
             - name
             - message
+            - status
+            - position (e.g., top, bottom, center)
           properties:
             name:
               type: string
@@ -290,6 +292,12 @@ def create_campaign():
             message:
               type: string
               description: Message content for the campaign
+            status:
+              type: string
+              description: Status of the campaign (e.g., active, paused)
+            position:
+              type: string
+              description: Position of the campaign (e.g., top, bottom, center)
     responses:
         200:
             description: Campaign created successfully
@@ -312,20 +320,24 @@ def create_campaign():
     
     name = data.get('name')
     message = data.get('message')
-    
+    status = data.get('status')
+    position = data.get('position')
     campaign_id = uuid.uuid4().hex
     
     db.campaigns.insert_one({
         "_id": campaign_id,
         "name": name,
         "message": message,
-        "status": "draft"
+        "status": status if status else "draft",
+        "position": position if position else "center"
     })
     
     return jsonify({"message": "Campaign created successfully", "campaign": {
         "_id": campaign_id,
         "name": name,
-        "message": message
+        "message": message,
+        "status": status if status else "draft",
+        "position": position if position else "center"
     }}), 200
 
 @in_app_notifications_bp.route('/api/v1/admin/campaigns/<campaign_id>', methods=['DELETE'])
