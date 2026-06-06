@@ -63,7 +63,7 @@ def register_device():
 
 @in_app_notifications_bp.route('/api/v1/sdk/notifications', methods=['GET'])
 def get_notifications():
-    """Get in-app notifications for a user
+    """Get unread in-app notifications for a user
     ---
     tags:
       - In-App Notifications - SDK 
@@ -72,10 +72,10 @@ def get_notifications():
         in: query
         required: true
         type: string
-        description: Identifier for the user to retrieve notifications for
+        description: Identifier for the user to retrieve unread notifications for
     responses:
         200:
-            description: Notifications retrieved successfully
+            description: Unread notifications retrieved successfully
         400:
             description: Invalid input
         500:
@@ -90,12 +90,21 @@ def get_notifications():
     if not user_id:
         return jsonify({"error": "Invalid input, user_id is required"}), 400
     
-    notifications = list(db.notifications.find({"user_id": user_id}))
+    # Query only for notifications where the status is NOT 'read'
+    query = {
+        "user_id": user_id,
+        "status": {"$ne": "read"} 
+    }
+    
+    notifications = list(db.notifications.find(query))
     
     for note in notifications:
         note['_id'] = str(note['_id'])
     
-    return jsonify({"message": "Notifications retrieved successfully", "notifications": notifications}), 200
+    return jsonify({
+        "message": "Unread notifications retrieved successfully", 
+        "notifications": notifications
+    }), 200
 
 @in_app_notifications_bp.route('/api/v1/sdk/sync', methods=['POST'])
 def sync_notifications():
@@ -198,7 +207,7 @@ def report_crash():
     
 @in_app_notifications_bp.route('/api/v1/sdk/notifications/<id>/interact', methods=['POST'])
 def interact_with_notification(id):
-    """Interact with a specific in-app notification
+    """Mark a specific in-app notification as read
     ---
     tags:
       - In-App Notifications - SDK 
@@ -207,10 +216,10 @@ def interact_with_notification(id):
         in: path
         required: true
         type: string
-        description: Identifier for the notification to interact with
+        description: Identifier for the notification to mark as read
     responses:
         200:
-            description: Notification interaction recorded successfully
+            description: Notification marked as read successfully
         400:
             description: Invalid input
         404:
@@ -226,20 +235,17 @@ def interact_with_notification(id):
     if not id:
         return jsonify({"error": "Invalid input, notification ID is required in the path"}), 400
     
-    # Find the specific notification and update its read/clicked status in one operation
+    # Update the status to 'read'
     result = db.notifications.update_one(
         {"_id": id}, 
-        {"$set": {
-            "status": "read", 
-            "clicked": True 
-        }}
+        {"$set": {"status": "read"}}
     )
     
     if result.matched_count == 0:
         return jsonify({"error": "Notification not found"}), 404
     
     return jsonify({
-        "message": "Notification interaction recorded successfully", 
+        "message": "Notification marked as read", 
         "notification_id": id
     }), 200
 
