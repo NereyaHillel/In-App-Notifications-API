@@ -18,9 +18,13 @@ def register_device():
         schema:
           type: object
           required:
+            - device_name
             - device_id
             - user_id
           properties:
+            device_name:
+              type: string
+              description: Name of the device
             device_id:
               type: string
               description: Unique identifier for the device
