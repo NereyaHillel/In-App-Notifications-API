@@ -431,18 +431,14 @@ def update_campaign_status(campaign_id):
         
     status = data.get('status')
     
-    # 1. Update the campaign blueprint's status
     result = db.campaigns.update_one({"_id": campaign_id}, {"$set": {"status": status}})
     
     if result.matched_count == 0:
         return jsonify({"error": "Campaign not found"}), 404
 
-    # 2. THE FAN-OUT LOGIC: If the admin just activated the campaign, generate the notifications
     if status == "active":
-        # Fetch the blueprint to get the message content
         campaign = db.campaigns.find_one({"_id": campaign_id})
         
-        # Get all unique users who have registered a device
         users = db.registered_devices.distinct("user_id")
         
         if users:
@@ -452,12 +448,11 @@ def update_campaign_status(campaign_id):
                     "_id": uuid.uuid4().hex,
                     "campaign_id": campaign_id,
                     "user_id": uid,
-                    "message": campaign.get("message"), # Copy the message payload
+                    "message": campaign.get("message"),
                     "status": "delivered",
                     "clicked": False
                 })
             
-            # Bulk insert is highly efficient for MongoDB
             db.notifications.insert_many(notifications_to_insert)
     
     return jsonify({
